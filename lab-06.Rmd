@@ -1,7 +1,7 @@
 ---
 title: "Lab 06 - Sad plots"
-author: "Insert your name here"
-date: "Insert date here"
+author: "Lindley Slipetz"
+date: 4/16/2021
 output: github_document
 ---
 
