@@ -71,6 +71,44 @@ We see that TT faculty have steadily declined since 1975, while part time facult
 
 ### Exercise 3
 
-...
+```{r fisheries_data}
+fisheries <- read_csv("data/fisheries.csv")
+```
 
-Add exercise headings as needed.
+Given the wide range of data, I think this would be best split into two graphs: the top 10% and bottom 10%. We'll start with the top 20.
+
+```{r fish_desc}
+fish_desc <- fisheries %>%
+  arrange(desc(total))
+```
+```{r top_10}
+obs <- nrow(fish_desc) 
+top_10 <- fish_desc %>% 
+  filter(row_number() < obs * 0.1)
+```
+
+```{r top_10_graph}
+top_10 %>%
+ggplot(aes(x=reorder(country, -total), y=total)) +
+  geom_bar(stat="identity") +
+  coord_flip() + 
+  labs(title = "Fishery production of countries-2016", x = "Country", y = "Fishery production")
+```
+
+China is byfar the biggest fishery producer. It is so much larger than the other countries that it's no wonder the original graph was difficult to read. Another approach to tackling this data is the remove the outliers like China and Indonesia. We'll keep on track and look at the bottom 10%. 
+
+```{r bottom_10}
+bot_10 <- fish_desc %>%
+    top_n(total
+          ,n = -0.1*nrow(.))
+```
+
+```{r bot_10_graph}
+bot_10 %>%
+ggplot(aes(x=reorder(country, -total), y=total)) +
+  geom_bar(stat="identity") +
+  coord_flip() + 
+  labs(title = "Fishery production of countries-2016", x = "Country", y = "Fishery production")
+```
+
+There are 4 countries with zero fish production. These could also be eliminated if we took the outlier approach. Lesotho has the most of the bottom 10%, but it is still much less than the amounts on the top 10% graph. Hence, I think this is best split into multiple graphs.
