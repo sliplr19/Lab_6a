@@ -7,24 +7,67 @@ output: github_document
 
 ### Load packages and data
 
-```{r load-packages, message = FALSE}
+```{r load-packages, message = FALSE, warning = FALSE}
 library(tidyverse) 
-library(dsbox) 
 ```
 
-### Exercise 1
+```{r load-data, message = FALSE, warning = FALSE}
+staff <- read_csv("data/instructional-staff.csv")
+```
 
-Remove this text, and add your answer for Exercise 1 here.
-Add code chunks as needed.
-Don't forget to label your code chunk.
-Do not use spaces in code chunk labels.
+```{r pivot_data}
+staff_long <- staff %>%
+  pivot_longer(cols = -faculty_type, names_to = "year") %>%
+  mutate(value = as.numeric(value))
+```
+
+```{r line_plot_bad}
+staff_long %>%
+  ggplot(aes(x = year, y = value, color = faculty_type)) +
+  geom_line()
+```
+
+
+
+### Exercise 1
+```{r good_line_graph}
+staff_long %>%
+  ggplot(aes(x = year, y = value, group = faculty_type, color = faculty_type)) +
+  geom_line() +
+  theme(axis.text.x = element_text(angle = 90)) +
+  labs(x = "Year", y = "Percentage of Hires", title = "Percentage of hires by year grouped by faculty type", color = "Faculty type")
+```
 
 ### Exercise 2
 
-Remove this text, and add your answer for Exercise 1 here.
-Add code chunks as needed.
-Don't forget to label your code chunk.
-Do not use spaces in code chunk labels.
+If I'm understanding this correctly, it should be a comparison of TT faculty grouped together compared to Part-Time faculty. I don't think combining them as is would make sense because you could potentially end up with values over 100% and it'd be kind of meaningless. Maybe take the average percent hires of TT faculty per year and the part time faculty, then do a line graph of the grouped average and the part-time faculty (I didn't include grad students because that didn't seem to be the question. I don't think they should be grouped with TT faculty because that's totally different, but they shouldn't be grouped with part-time because they're not faculty. A separate line could be included for grad students. I also didn't include fulltime non-TT because they're important different from TT). Okay, I think I'm going to do that.
+
+```{r group_TT}
+TT_staff <- staff_long %>%
+  filter(faculty_type == "Full-Time Tenured Faculty" |
+           faculty_type == "Full-Time Tenure-Track Faculty") %>%
+  group_by(year) %>%
+  mutate(avg_TT = mean(value)) %>%
+  filter(faculty_type == "Full-Time Tenured Faculty")
+PT_staff <- staff_long %>%
+  filter(faculty_type == "Part-Time Faculty") %>%
+  group_by(year) %>%
+  mutate(avg_TT = value)
+all_staff <- rbind(TT_staff, PT_staff)
+```
+
+Now we're going to do the graph.
+```{r graph_2}
+all_staff %>%
+  ggplot(aes(x = year, y = avg_TT, group = faculty_type, color = faculty_type)) +
+  geom_line() +
+  theme(axis.text.x = element_text(angle = 90)) +
+  labs(x = "Year", y = "Percentage of Hires", title = "Percentage of hires by year grouped by faculty type") +
+  scale_color_discrete(name = "Faculty Type", labels = c("TT", "Part-time"))
+```
+
+We see that TT faculty have steadily declined since 1975, while part time faculty have steadily increased. Now, nearly half of new hires are part time.
+
 
 ### Exercise 3
 
